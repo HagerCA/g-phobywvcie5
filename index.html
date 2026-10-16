@@ -277,13 +277,16 @@ footer p{margin:10px 0 0;}
 </header>
 
 <nav class="tabs" aria-label="Sessions"><div class="in" role="tablist">
-  <button class="tab" role="tab" id="tab-oct" aria-controls="oct" aria-selected="true" style="--c:#7FB8F5"><i></i>Oct 2 · The Longer Letter <small>Latest</small></button>
+  <button class="tab" role="tab" id="tab-glance" aria-controls="glance" aria-selected="true" style="--c:#5FC0AE"><i></i>At a glance</button>
+  <button class="tab" role="tab" id="tab-ponder" aria-controls="ponder" aria-selected="false" style="--c:#8FB0F0"><i></i>Questions to ponder</button>
+  <button class="tab" role="tab" id="tab-oct" aria-controls="oct" aria-selected="false" style="--c:#7FB8F5"><i></i>Oct 2 · The Longer Letter <small>Latest</small></button>
   <button class="tab" role="tab" id="tab-sep16" aria-controls="sep16" aria-selected="false" style="--c:#E58BB0"><i></i>Sep 16 · The Echo</button>
   <button class="tab" role="tab" id="tab-sep3" aria-controls="sep3" aria-selected="false" style="--c:#5FC0AE"><i></i>Sep 3 · The Wheelbarrow</button>
   <button class="tab" role="tab" id="tab-thr" aria-controls="thr" aria-selected="false" style="--c:#D9A648"><i></i>Common threads</button>
 </div></nav>
 
-<section class="glance dots" id="glance">
+<main>
+<section class="panel glance dots" id="glance" role="tabpanel" aria-labelledby="tab-glance" style="--c:#5FC0AE">
   <div class="wide">
     <p class="eyebrow" style="--c:var(--teal)">At a glance</p>
     <h2>Where you <em style="--c:var(--gold)">are</em></h2>
@@ -303,7 +306,7 @@ footer p{margin:10px 0 0;}
   </div>
 </section>
 
-<section class="ponder dots" id="ponder">
+<section class="panel ponder dots" id="ponder" role="tabpanel" aria-labelledby="tab-ponder" style="--c:#8FB0F0" hidden>
   <div class="wide">
     <p class="eyebrow" style="--c:var(--blue)">Before your next session</p>
     <h2>Questions to <em style="--c:var(--blue)">ponder</em></h2>
@@ -314,8 +317,7 @@ footer p{margin:10px 0 0;}
 
 
 
-<main>
-  <section class="panel" id="oct" role="tabpanel" aria-labelledby="tab-oct" style="--c:#7FB8F5"></section>
+  <section class="panel" id="oct" role="tabpanel" aria-labelledby="tab-oct" style="--c:#7FB8F5" hidden></section>
   <section class="panel" id="sep16" role="tabpanel" aria-labelledby="tab-sep16" style="--c:#E58BB0" hidden></section>
   <section class="panel" id="sep3" role="tabpanel" aria-labelledby="tab-sep3" style="--c:#5FC0AE" hidden></section>
   <section class="panel" id="thr" role="tabpanel" aria-labelledby="tab-thr" style="--c:#D9A648" hidden></section>
@@ -653,7 +655,12 @@ function show(id,push,scroll=true){
   tabs.forEach(t=>t.setAttribute('aria-selected',t.getAttribute('aria-controls')===id));
   document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!==id);
   reveal(); if(push) history.replaceState(null,'','#'+id);
-  const top=document.querySelector('main').offsetTop-document.querySelector('.tabs').offsetHeight; if(scroll) scrollTo({top,behavior:'smooth'});
+  /* Keep the chosen tab visible in the bar. */
+  const bar=document.querySelector('.tabs .in'), t=document.getElementById('tab-'+id);
+  if(t) bar.scrollTo({left:t.offsetLeft-bar.clientWidth/2+t.offsetWidth/2,behavior:'smooth'});
+  /* Every tab is its own page, opened in place: only scroll back up to the tab bar if you are further down. */
+  const top=document.querySelector('main').offsetTop-document.querySelector('.tabs').offsetHeight;
+  if(scroll && scrollY>top) scrollTo({top,behavior:'smooth'});
 }
 tabs.forEach(t=>t.addEventListener('click',()=>show(t.getAttribute('aria-controls'),true)));
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.go,true)));
