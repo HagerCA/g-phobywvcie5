@@ -242,6 +242,18 @@ footer p{margin:10px 0 0;}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none !important;transition:none !important;}.bp .spine,.bp .crownarc{stroke-dashoffset:0;}.bp .ck{opacity:1;}html{scroll-behavior:auto;}}
 @media print{.tabs,.pop{display:none;}.panel[hidden]{display:block !important;}body{background:#1B0C20;-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+/* The Build tab: every practice in one place (Soul Family Blueprint standard, 2026-10-16) */
+.pill .foot{justify-content:space-between;}
+.from{background:none;border:0;padding:0;cursor:pointer;font-family:var(--head);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--p);}
+.from:hover{color:#fff;}
+.rx.start{grid-template-columns:repeat(3,1fr);}
+.rx.start .pill{border-color:rgba(217,166,72,.45);box-shadow:0 0 40px -18px var(--p);}
+.mantras{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.mantra{margin:0;padding:18px 20px 16px;border-radius:6px;background:linear-gradient(165deg,#2A1336,#1C0D22);border:1px solid rgba(217,166,72,.28);border-left:3px solid var(--gold);font-family:var(--display);font-style:italic;font-size:1.22rem;line-height:1.35;color:#fff;}
+.mantra cite{display:block;margin-top:10px;font-family:var(--head);font-style:normal;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);}
+.bcount{font-family:var(--display);font-size:3rem;line-height:1;color:rgba(239,231,218,.16);}
+@media (max-width:1000px){.mantras,.rx.start{grid-template-columns:1fr 1fr;}}
+@media (max-width:760px){.mantras,.rx.start{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -280,6 +292,7 @@ footer p{margin:10px 0 0;}
   <button class="tab" role="tab" id="tab-glance" aria-controls="glance" aria-selected="true" style="--c:#5FC0AE"><i></i>At a glance</button>
   <button class="tab" role="tab" id="tab-ponder" aria-controls="ponder" aria-selected="false" style="--c:#8FB0F0"><i></i>Questions to ponder</button>
   <button class="tab" role="tab" id="tab-thr" aria-controls="thr" aria-selected="false" style="--c:#D9A648"><i></i>Common threads</button>
+  <button class="tab" role="tab" id="tab-build" aria-controls="build" aria-selected="false" style="--c:#F5A066"><i></i>The Build</button>
   <button class="tab" role="tab" id="tab-oct" aria-controls="oct" aria-selected="false" style="--c:#7FB8F5"><i></i>Oct 2 · The Longer Letter <small>Latest</small></button>
   <button class="tab" role="tab" id="tab-sep16" aria-controls="sep16" aria-selected="false" style="--c:#E58BB0"><i></i>Sep 16 · The Echo</button>
   <button class="tab" role="tab" id="tab-sep3" aria-controls="sep3" aria-selected="false" style="--c:#5FC0AE"><i></i>Sep 3 · The Wheelbarrow</button>
@@ -321,6 +334,7 @@ footer p{margin:10px 0 0;}
   <section class="panel" id="sep16" role="tabpanel" aria-labelledby="tab-sep16" style="--c:#E58BB0" hidden></section>
   <section class="panel" id="sep3" role="tabpanel" aria-labelledby="tab-sep3" style="--c:#5FC0AE" hidden></section>
   <section class="panel" id="thr" role="tabpanel" aria-labelledby="tab-thr" style="--c:#D9A648" hidden></section>
+  <section class="panel" id="build" role="tabpanel" aria-labelledby="tab-build" style="--c:#F5A066" hidden></section>
 </main>
 
 <div class="pop" id="pop" role="tooltip"></div>
@@ -609,10 +623,61 @@ function threads(){
       <p class="so"><b>So</b>${so}</p></article>`).join('')}</div>
   </div>`;
 }
+/* The Build: every practice from every session, gathered by how you use it.
+   Needs, defined by the page: BUILD_SRC {tabId: sessionObject with .rx}, BUILD_LABEL {tabId: label},
+   START [[tabId, practiceName] x3], MANTRAS [[text, source]], BUILD [{eyebrow, title, dek, items:[[tabId, practiceName]]}],
+   plus the page's own I() and gl(). A practice name that doesn't exist stops the page loudly. */
+function buildCard(sid,name){
+  const S=BUILD_SRC[sid], r=S&&S.rx.find(x=>x[1]===name);
+  if(!r) throw new Error('The Build: no practice "'+name+'" in '+sid);
+  const [ic,nm,maker,how,when,why,color,status]=r;
+  const label=status==='open'?'Open':status==='now'?'Ongoing':'Practice';
+  return `<div class="pill" style="--p:${color}"><div class="top"><div class="ico">${I(ic,22)}</div><div><h4>${nm}</h4><span class="maker">${maker}</span></div></div>
+    <dl><dt>How</dt><dd>${gl(how)}</dd><dt>When</dt><dd>${when}</dd></dl><p class="why">${why}</p>
+    <div class="foot"><span class="status ${status}">${label}</span><button class="from" type="button" data-go="${sid}">From ${BUILD_LABEL[sid]} →</button></div></div>`;
+}
+function buildPage(){
+  const total=new Set(BUILD.flatMap(c=>c.items.map(([s,n])=>s+'|'+n))).size;
+  return `<div class="wide">
+    <div class="sess-head" style="grid-template-columns:1fr"><div><p class="eyebrow">Everything I gave you to live</p><h2>The <em>Build</em></h2>
+      <p class="lede">Every practice, mantra and journaling prompt from our sessions, in one place and sorted by how you use it. ${total} in all. Start with three. The rest are here when you need them, and each one links back to the session it came from.</p></div></div>
+    <div class="block" style="margin-top:0"><div class="block-head"><div><p class="eyebrow">Start here</p><h3>Three for <em>right now</em></h3><p>If you only do three things before we meet again, do these.</p></div></div>
+      <div class="rx start">${START.map(([s,n])=>buildCard(s,n)).join('')}</div></div>
+    <div class="block"><div class="block-head"><div><p class="eyebrow">Words to carry</p><h3>Your <em>mantras</em></h3><p>Say them out loud. Short enough to reach for in the moment you need them.</p></div><span class="bcount">${String(MANTRAS.length).padStart(2,'0')}</span></div>
+      <div class="mantras">${MANTRAS.map(([m,src])=>`<blockquote class="mantra">“${m}”<cite>${src}</cite></blockquote>`).join('')}</div></div>
+    ${BUILD.map(c=>`<div class="block"><div class="block-head"><div><p class="eyebrow">${c.eyebrow}</p><h3>${c.title}</h3><p>${c.dek}</p></div><span class="bcount">${String(c.items.length).padStart(2,'0')}</span></div>
+      <div class="rx">${c.items.map(([s,n])=>buildCard(s,n)).join('')}</div></div>`).join('')}
+  </div>`;
+}
+
+/* The Build: Nick's 12 practices, sorted by how he uses them. Names must match the session rx names exactly. */
+const BUILD_SRC = {oct:OCT, sep16:SEP16, sep3:SEP3};
+const BUILD_LABEL = {oct:'Oct 2', sep16:'Sep 16', sep3:'Sep 3'};
+const START = [['oct','The unsent letter'],['sep3','Devotion over discipline'],['oct','Sensation first, story second']];
+const MANTRAS = [
+  ['I see you, I hear you. I thank you for trying to help me out.','Sep 16 · At the mirror'],
+  ['Can I hold this without needing to fix it?','Sep 3 · The steadiness check'],
+  ['Oh, all right, let’s talk, little man.','Sep 16 · When you hear an absolute'],
+  ['Give yourself the grace that you would give to anybody else.','Sep 16 · The grace mala'],
+  ['The more I feel, the more I grow, the more I grow, the more I feel.','Your words · Oct 2'],
+  ['It’s not a becoming, it is a remembering.','Sep 3']
+];
+const BUILD = [
+  {eyebrow:'Daily practice', title:'Your <em>rhythm</em>', dek:'What you put on each morning, and what devotion decides to keep now the 40 days are done.',
+   items:[['sep16','The grace mala'],['sep3','Devotion over discipline'],['sep16','Movement as medicine']]},
+  {eyebrow:'Writing and grief', title:'On the <em>page</em>', dek:'The letters, and the room to write them. No deadline, on purpose.',
+   items:[['oct','The unsent letter'],['oct','The longer letter'],['oct','Space, not a slot']]},
+  {eyebrow:'In the moment', title:'When it <em>shows up</em>', dek:'For the echo, the absolutes, the buzz in your throat, and the moment someone close is activated.',
+   items:[['oct','Sensation first, story second'],['sep16','Reparenting the noticing'],['sep16','Listen for absolutes'],['sep3','Throat and movement pairing'],['sep3','The steadiness check']]},
+  {eyebrow:'With your people', title:'From a full <em>cup</em>', dek:'Connection given from fullness, never from duty.',
+   items:[['sep3','Community reconnection']]}
+];
+
 document.getElementById('oct').innerHTML = gl(session(OCT));
 document.getElementById('sep16').innerHTML = gl(session(SEP16));
 document.getElementById('sep3').innerHTML = gl(session(SEP3));
 document.getElementById('thr').innerHTML = threads();
+document.getElementById('build').innerHTML = buildPage();
 
 /* At a glance */
 const APPTS = [
